@@ -18,6 +18,7 @@ import numpy as np
 from torch.utils import data
 from models import get_model, load_pretrained
 from loaders import get_dataloader
+from dotenv import load_dotenv
 
 from utils import roc_btw_arr, batch_run, search_params_intp, parse_unknown_args, parse_nested_args
 
@@ -28,8 +29,8 @@ parser.add_argument('--config', type=str, help='config file name')
 parser.add_argument('--ckpt', type=str, help='checkpoint file name to load. default', default=None)
 parser.add_argument('--ood', type=str, help='list of OOD datasets, separated by comma')
 parser.add_argument('--device', type=str, help='device')
-parser.add_argument('--dataset', type=str, choices=['MNIST_OOD', 'CIFAR10_OOD', 'ImageNet32', 'FashionMNIST_OOD',
-                                                    'FashionMNISTpad_OOD'],
+parser.add_argument('--dataset', type=str, choices=['Omniglot', 'MNIST_OOD', 'CIFAR10_OOD', 'ImageNet32', 'FashionMNIST_OOD',
+                                                    'FashionMNISTpad_OOD', 'SVHN_OOD'],
                     default='MNIST', help='inlier dataset dataset')
 parser.add_argument('--aug', type=str, help='pre-defiend data augmentation', choices=[None, 'CIFAR10', 'CIFAR10-OE'])
 parser.add_argument('--method', type=str, choices=[None, 'likelihood_regret', 'input_complexity', 'outlier_exposure'])
@@ -38,7 +39,13 @@ d_cmd_cfg = parse_unknown_args(unknown)
 d_cmd_cfg = parse_nested_args(d_cmd_cfg)
 print(d_cmd_cfg)
 
+ # Load the environment variables
+load_dotenv()
 
+# Set all the checkpoints in `CHECKPOINT_ROOT` if multiple disks are connected
+if 'CHECKPOINT_ROOT' in os.environ:
+    args.resultdir = os.path.join(os.environ['CHECKPOINT_ROOT'], args.resultdir)
+    
 # load config file
 cfg = yaml.load(open(os.path.join(args.resultdir, args.config)), Loader=yaml.FullLoader)
 result_dir = args.resultdir
@@ -65,7 +72,7 @@ def evaluate(m, in_dl, out_dl, device):
 # load dataset
 print('ood datasets')
 print(l_ood)
-if args.dataset in {'MNIST_OOD', 'FashionMNIST_OOD'}:
+if args.dataset in {'MNIST_OOD', 'FashionMNIST_OOD', 'Omniglot'}:
     size = 28
     channel = 1
 else:
@@ -92,11 +99,11 @@ for ood_name in l_ood:
     l_ood_dl.append(dl)
 
 model = get_model(cfg).to(device)
-ckpt_data = torch.load(ckpt_file)
+ckpt_data = torch.load(ckpt_file, map_location='cpu')
 if 'model_state' in ckpt_data:
     model.load_state_dict(ckpt_data['model_state'])
 else:
-    model.load_state_dict(torch.load(ckpt_file))
+    model.load_state_dict(torch.load(ckpt_file, map_location='cpu'))
 
 model.eval()
 model.to(device)
