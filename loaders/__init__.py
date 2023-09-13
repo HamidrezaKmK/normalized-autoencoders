@@ -236,7 +236,7 @@ def get_dataset(data_dict, split_type=None, data_aug=None, dequant=None):
         else:
             tr = Compose([Resize(size), ToTensor()])
 
-        dataset = Omniglot(data_path, background=background, download=False,
+        dataset = Omniglot(data_path, background=background, download=True,
                            transform=tr)
     elif name == 'ImageNet32':
         train_split_ratio = data_dict.get('train_split_ratio', 0.8)
