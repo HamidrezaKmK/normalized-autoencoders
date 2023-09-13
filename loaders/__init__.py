@@ -16,6 +16,9 @@ from torchvision.datasets import FashionMNIST, Omniglot
 from augmentations import get_composed_augmentations
 from augmentations.augmentations import ToGray, Invert, Fragment
 
+# To get environment variables
+from dotenv import load_dotenv
+import os
 
 OOD_SIZE = 32  # common image size for OOD detection experiments
 
@@ -69,8 +72,17 @@ def get_dataset(data_dict, split_type=None, data_aug=None, dequant=None):
         else: return data.ConcatDataset([get_dataset(d) for k, d in data_dict.items() if k.startswith('concat')])
     name = data_dict["dataset"]
     split_type = data_dict['split']
+    
+    
     data_path = data_dict["path"][split_type] if split_type in data_dict["path"] else data_dict["path"]
-
+    
+     # Load the environment variables
+    load_dotenv()
+    
+    # Set everything according to the DATA_ROOT if given in the dotenv file
+    if 'DATA_ROOT' in os.environ:
+        data_path = os.path.join(os.environ['DATA_ROOT'], data_path)
+    
     # default tranform behavior. 
     original_data_aug = data_aug
     if data_aug is not None:
