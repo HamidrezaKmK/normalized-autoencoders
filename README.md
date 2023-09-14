@@ -118,75 +118,22 @@ python evaluate_ood.py --ood ConstantGray_OOD,FashionMNIST_OOD,SVHN_OOD,CelebA_O
 </details>
 
 
-### Training
+## Additional Benchmarks on SVHN
 
-Use `train.py` to train NAE. 
-* `--config` option specifies a path to a configuration yaml file.
-* `--logdir` specifies a directory where results files will be written.
-* `--run` specifies an id for each run, i.e., an experiment.
+We have also provided the additional checkpoints for an SVHN trained dataset [here](https://drive.google.com/file/d/1sG7faE_eqRX0qMoylmxIY6XSWtw6fKlR/view?usp=sharing) and we used those checkpoints in our OOD detection using LID estimates paper. After downloading the checkpoints, make sure to put them in the pretrained directory and then run the following commands:
 
-**Training on MNIST**
-```
-python train.py --config configs/mnist_ood_nae/z32.yml --logdir results/mnist_ood_nae/ --run run --device 0
-```
-
-**Training on MNIST digits 0 to 8 for the hold-out digit detection task**
-```
-python train.py --config configs/mnist_ho_nae/l2_z32.yml --logdir results/mnist_ho_nae --run run --device 0
+```bash
+# 1. CIFAR10
+python evaluate_ood.py --ood SVHN_OOD,CelebA_OOD --resultdir pretrained/cifar_ood_nae/z32gn/ --ckpt nae_9.pkl --config z32gn.yml --device 0 --dataset CIFAR10_OOD
+# 2. SVHN
+python evaluate_ood.py --ood CIFAR10_OOD,CelebA_OOD --resultdir pretrained/svhn_ood_nae/z32gn/run --ckpt nae_9.pkl --config z32gn.yml --device 0 --dataset SVHN_OOD
+# 3. Fashion-MNIST
+python evaluate_ood.py --ood MNIST_OOD,Omniglot --resultdir pretrained/fmnist_ood_nae/z32 --ckpt nae_49.pkl --config z32.yml --device 0 --dataset FashionMNIST_OOD
+# 4. MNIST
+python evaluate_ood.py --ood FashionMNIST_OOD,Omniglot --resultdir pretrained/mnist_ood_nae/z32 --ckpt nae_20.pkl --config z32.yml --device 0 --dataset MNIST_OOD
 ```
 
-**Training on CIFAR-10**
-```
-python train.py --config configs/cifar_ood_nae/z32gn.yml --logdir results/cifar_ood_nae/ --run run --device 0
-```
-
-**Training on CelebA 64x64**
-```
-python train.py --config configs/celeba64_ood_nae/z64gr_h32g8.yml --logdir results/celeba64_ood_nae/z64gr_h32g8.yml --run run --device 0
-```
-
-**Training on FashionMNIST**
-```
-python train.py --config configs/fmnist_ood_nae/z32.yml --device 0 --logdir results/fmnist_ood_nae --run run --device 0
-```
-
-
-### Sampling
-
-Use `sample.py` to generate sample images form NAE. Samples are saved as `.npy` file containing an `(n_sample, img_h, img_w, channels)` array.
-Note that the quality of generated images is not supposed to match that of state-of-the-art generative models. Improving the sample quality is one of the important future research direction.
-
-**Sampling for MNIST**
-
-```
-python sample.py pretrained/mnist_ood_nae/z32/ z32.yml nae_20.pkl --zstep 200 --x_shape 28 --batch_size 64 --n_sample 64  --x_channel 1 --device 0
-```
-
-![mnistsamples](assets/mnistsamples.png)
-
-The white square is an artifact of NAE, possibly occurring due to the distortion of the encoder and the decoder.
-
-The result is comparable to the samples from a vanilla autoencoder generated with the same procedure.
-
-![vanillamnistsamples](assets/vanilla_ae_mnistsamples.png)
-
-
-**Sampling for CIFAR-10**
-```
-python sample.py pretrained/cifar_ood_nae/z32gn/ z32gn.yml nae_8.pkl --zstep 180 --xstep 40 --batch_size 64 --n_sample 64 --name run --device 0
-```
-
-![cifar10samples](assets/cifar10samples.png)
-
-**Sampling for CelebA 64x64**
-```
-python sample.py pretrained/celeba64_ood_nae/z64gr_h32g8/ z64gr_h32g8.yml nae_3.pkl --zstep 180 --xstep 40 --batch_size 64 --n_sample 64 --name run --device 0 --x_shape 64
-```
-
-
-![celeba64samples](assets/celeba64samples.png)
-
-
+Here are the prompts we use to reproduce the 
 
 ## Citation
 
